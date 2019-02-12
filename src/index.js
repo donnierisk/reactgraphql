@@ -4,10 +4,16 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { ApolloProvider } from 'react-apollo';
 import client from './apollo';
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
+import reducer from './redux/reducers/currencies';
+const store = createStore(reducer);
 
 ReactDOM.render(
     <ApolloProvider client={client}>
-        <App />
+        <Provider store={store}>
+            <App />
+        </Provider>
     </ApolloProvider>
     , document.getElementById('root'));
 
