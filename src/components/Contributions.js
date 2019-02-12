@@ -2,9 +2,11 @@ import React, { Fragment } from 'react';
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
 import { connect } from 'react-redux';
-
 import { selectCurrency } from '../redux/actions';
 
+import styled from 'styled-components';
+import Filters from './Filters';
+import SingleContribution from './SingleContribution';
 
 const GET_CONTRIBUTIONS = gql`
 
@@ -18,6 +20,20 @@ const GET_CONTRIBUTIONS = gql`
     }
 `;
 
+const Wrapper = styled.div`
+    width: calc(90vw - 32px);
+    background: rgb(27, 30, 38);
+    padding: 16px;
+    color: white;
+    margin-top: 20px;
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    @media (min-width: 768px) {
+        width: 60vw;
+    }
+`;
+
 class Contributions extends React.Component {
 
     handleSelectCurrency = (currency) => {
@@ -28,33 +44,34 @@ class Contributions extends React.Component {
     render(){
         return (
             <Fragment>
+                <h2>ICO Contributions:</h2>
                 <div>
-                    <h3>Filters:</h3>
-                    <p onClick={() => this.handleSelectCurrency()}>ALL</p>
-                    <p onClick={() => this.handleSelectCurrency('BTC')}>BTC</p>
-                    <p onClick={() => this.handleSelectCurrency('ETH')}>ETH</p>
-                    <p onClick={() => this.handleSelectCurrency('LTC')}>LTC</p>
+                    <Filters 
+                        selectCurrency={this.handleSelectCurrency}
+                        selectedCurrency={this.props.selectedCurrency}
+                     />
                 </div>
-                <Query query={GET_CONTRIBUTIONS} >
-                    { ({loading, error, data }) => {
-                        if (loading) return "Loading...";
-                        if (error) return `Error! ${error.message}`;
+                <Wrapper>
+                    <Query query={GET_CONTRIBUTIONS} >
+                        { ({loading, error, data }) => {
+                            if (loading) return "Loading...";
+                            if (error) return `Error! ${error.message}`;
 
-                        if(this.props.selectedCurrency && this.props.selectedCurrency.length > 0) {
-                            const filteredContributions = data.contributions.filter((contribution) => {
-                                return (this.props.selectedCurrency === contribution.currency)
-                            });
+                            let contributionsList = data.contributions;
 
-                            return filteredContributions.map((contribution, idx) => {
-                                return <p key={idx}>{contribution.value} {contribution.currency}</p>
+                            if(this.props.selectedCurrency && this.props.selectedCurrency.length > 0) {
+                                contributionsList = data.contributions.filter((contribution) => {
+                                    return (this.props.selectedCurrency === contribution.currency)
+                                });
+                            }
+
+                            return contributionsList.map((contribution, idx) => {
+                                return <SingleContribution key={idx} info={contribution} />
                             })
+                            } 
                         }
-                        return data.contributions.map((contribution, idx) => {
-                            return <p key={idx}>{contribution.value} {contribution.currency}</p>
-                        })
-                        } 
-                    }
-                </Query>
+                    </Query>
+                </Wrapper>
             </Fragment>
         )
     }
